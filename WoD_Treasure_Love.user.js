@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WoD Treasure Love
 // @namespace    https://www.wannaexpresso.com/
-// @version      0.2
+// @version      0.3
 // @description  Make love with WoD Treasure!
 // @author       DotIN13
 // @match        http://canto.world-of-dungeons.org/wod/spiel/hero/itemlinklist.php?typ=treasure*
@@ -1932,9 +1932,9 @@
     }
 
     function wrapStr(str, length) {
-       for (var i=1; i<(str.length/length); i++){
+        for (var i=1; i<(str.length/length); i++){
             str = str.splice(i*length, "\n");
-       }
+        }
         return str;
     }
 
@@ -2021,7 +2021,7 @@
 
     // calc button function ////////////////////////////////////////////////////
     window.calcLove = function() {
-        if (codeArea.value =="" || codeArea.value =="宝库1代码..."){
+        if (codeArea.value =="" || codeArea.value =="宝库1代码...\n\n1. 点击“获取代码”，即可在左侧输入框获得当前宝库代码\n\n2. 在左侧输入框输入别人分享的代码，点击“解析代码”，即可获得对方宝库套装列表\n\n3. 在右侧输入框输入对方分享的宝库码（保持左侧为原有提示语，或者为空），点击“计算好感度”，可以计算对方和你当前宝库的好感\n\n4. 在左右两侧分别输入双方宝库码，即可计算这两个宝库的好感"){
             $("#listDiv").load(bbcodeA.getAttribute("href")+" pre", function getTreasureCodes(){
                 var itemlist;
                 itemlist = document.getElementById("listDiv").firstChild.innerText;
@@ -2082,7 +2082,7 @@
 
             var codeArea = document.createElement("textarea");
             codeArea.id = "codeArea";
-            codeArea.value = "宝库1代码...";
+            codeArea.value = "宝库1代码...\n\n1. 点击“获取代码”，即可在左侧输入框获得当前宝库代码\n\n2. 在左侧输入框输入别人分享的代码，点击“解析代码”，即可获得对方宝库套装列表\n\n3. 在右侧输入框输入对方分享的宝库码（保持左侧为原有提示语，或者为空），点击“计算好感度”，可以计算对方和你当前宝库的好感\n\n4. 在左右两侧分别输入双方宝库码，即可计算这两个宝库的好感";
             codeArea.style = "width: 45%; height: 200px; padding:10px; margin: 5px; line-height: 1em; font-family: 'Times New Roman', 'Liberation Serif', Roboto, SimHei, 'Wenquanyi Micro Hei', monospace;";
             var codeArea_2 = document.createElement("textarea");
             codeArea_2.id = "codeArea_2";

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WoD Treasure Love
 // @namespace    https://www.wannaexpresso.com/
-// @version      0.1
+// @version      0.2
 // @description  Make love with WoD Treasure!
 // @author       DotIN13
 // @match        http://canto.world-of-dungeons.org/wod/spiel/hero/itemlinklist.php?typ=treasure*
@@ -1876,19 +1876,20 @@
     var treasureItems;
 
     // draw heart ////////////////////////////////////////////////////////////
+
     function twoTriangleUp(height) {
         for (let i = 0; i < height; i++) {
             for (let j = height - i; j > 0; j--) {
-                document.getElementById("codeArea").value += ("__");
+                document.getElementById("codeArea").value += ("—");
             }
             for (let k = 1; k < i * 2 + 1; k++) {
-                document.getElementById("codeArea").value += ("***");
+                document.getElementById("codeArea").value += ("＊");
             }
             for (let j = height - i; j > 0; j--) {
-                document.getElementById("codeArea").value += ("____");
+                document.getElementById("codeArea").value += ("——");
             }
             for (let k = 1; k < i * 2 + 1; k++) {
-                document.getElementById("codeArea").value += ("***");
+                document.getElementById("codeArea").value += ("＊");
             }
             document.getElementById("codeArea").value += ("\n");
         }
@@ -1896,14 +1897,14 @@
 
     function downTriangle(height, love){
         for (let i = 0; i < height*2; i++) {
-            for (let j = 0; j < i*2-0.9; j=j+0.9) {
-                document.getElementById("codeArea").value += ("_");
+            for (let j = 0; j < i-0.9; j=j+0.9) {
+                document.getElementById("codeArea").value += ("—");
             }
             for (let k = height*4-(i*2-1); k > 2; k--) {
-                document.getElementById("codeArea").value += ("***");
+                document.getElementById("codeArea").value += ("＊");
             }
             document.getElementById("codeArea").value += ("\n");
-            if(i == 1){document.getElementById("codeArea").value += ("___*****************好感度"+love+"%****************\n");}
+            if(i == 1){document.getElementById("codeArea").value += ("—＊＊＊＊＊＊好感度"+love+"%＊＊＊＊＊\n");}
         }
     }
 
@@ -1911,6 +1912,30 @@
         codeArea.value = '';
         twoTriangleUp(height);
         downTriangle(height,love);
+    }
+
+    // wrap string //////////////////////////////////////////////////////////////
+
+    if (String.prototype.splice === undefined) {
+        /**
+         * Splices text within a string.
+         * @param {int} offset The position to insert the text at (before)
+         * @param {string} text The text to insert
+         * @param {int} [removeCount=0] An optional number of characters to overwrite
+         * @returns {string} A modified string containing the spliced text.
+         */
+        String.prototype.splice = function(offset, text, removeCount=0) {
+            let calculatedOffset = offset < 0 ? this.length + offset : offset;
+            return this.substring(0, calculatedOffset) +
+                text + this.substring(calculatedOffset + removeCount);
+        };
+    }
+
+    function wrapStr(str, length) {
+       for (var i=1; i<(str.length/length); i++){
+            str = str.splice(i*length, "\n");
+       }
+        return str;
     }
 
     // generate compressed item string //////////////////////////////////////////
@@ -1958,12 +1983,18 @@
             //console.log(strSetlist);
             var compSetlist = binaryToHex(strSetlist);
             //console.log(compSetlist.result);
-            codeArea.value =compSetlist.result;
-
+            console.log(compSetlist.result);
+            codeArea.value = "#[group:" + document.querySelector("#main_content input[name='gruppe_name']").value + "]的宝库\n" + wrapStr(compSetlist.result, 60);
         });
     }
 
     // decode function //////////////////////////////////////////////////////////
+
+    function tidySharecode (code){
+        code = code.replace(/#.*\n/gm,"");
+        code = code.replace(/\n/gm, "");
+        return code;
+    }
 
     function binToBB (binCode) {
         var itemlist = binCode.split("");
@@ -1982,6 +2013,7 @@
 
     window.decodeSetCode = function () {
         var hexSetCode = document.getElementById("codeArea").value;
+        hexSetCode = tidySharecode(hexSetCode);
         var binSetCode = hexToBinary(hexSetCode);
         //console.log(binSetCode.result);
         document.getElementById("codeArea").value = binToBB(binSetCode.result);
@@ -1998,16 +2030,17 @@
                 getSetlistString(treasureItems);
                 var strSetlistBin = currentSetlist.join("");
                 //console.log(strSetlistBin);
-                var targetTreasureHex = document.getElementById("codeArea_2").value;
+                var targetTreasureHex = codeArea_2.value;
+                targetTreasureHex = tidySharecode(targetTreasureHex);
                 var strTargetTreasureBin = hexToBinary(targetTreasureHex);
                 //console.log(strTargetTreasureBin.result);
                 var love = 100 * stringSimilarity.compareTwoStrings(strSetlistBin, strTargetTreasureBin.result);
                 drawHeart(5, love.toFixed(1));
             });
         } else {
-            var treasureHex = codeArea.value;
+            var treasureHex = tidySharecode(codeArea.value);
             var strTreasureBin = hexToBinary(treasureHex);
-            var targetTreasureHex = codeArea_2.value;
+            var targetTreasureHex = tidySharecode(codeArea_2.value);
             var strTargetTreasureBin = hexToBinary(targetTreasureHex);
             var love = 100 * stringSimilarity.compareTwoStrings(strTreasureBin.result, strTargetTreasureBin.result);
             drawHeart(5, love.toFixed(1));
@@ -2050,11 +2083,11 @@
             var codeArea = document.createElement("textarea");
             codeArea.id = "codeArea";
             codeArea.value = "宝库1代码...";
-            codeArea.style = "width: 45%; height: 200px; padding:10px; margin: 5px;";
+            codeArea.style = "width: 45%; height: 200px; padding:10px; margin: 5px; line-height: 1em; font-family: 'Times New Roman', 'Liberation Serif', Roboto, SimHei, 'Wenquanyi Micro Hei', monospace;";
             var codeArea_2 = document.createElement("textarea");
             codeArea_2.id = "codeArea_2";
             codeArea_2.value = "宝库2代码...";
-            codeArea_2.style = "width: 45%; height: 200px; padding:10px; margin: 5px;";
+            codeArea_2.style = "width: 45%; height: 200px; padding:10px; margin: 5px; line-height: 1em; font-family: 'Times New Roman', 'Liberation Serif', Roboto, SimHei, 'Wenquanyi Micro Hei', monospace;";
             var codeAreaBr = document.createElement("br");
             var codeAreaHr = document.createElement("hr");
 

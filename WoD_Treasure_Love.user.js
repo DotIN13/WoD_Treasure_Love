@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         WoD Treasure Love
 // @namespace    https://www.wannaexpresso.com/
-// @version      0.3
+// @version      0.4
 // @description  Make love with WoD Treasure!
 // @author       DotIN13
-// @match        http://canto.world-of-dungeons.org/wod/spiel/hero/itemlinklist.php?typ=treasure*
+// @match        http://canto.world-of-dungeons.org/wod/spiel/hero/itemlinklist.php*
 // @match        http://canto.world-of-dungeons.org/wod/spiel/hero/items.php*
 // @require      https://unpkg.com/string-similarity/umd/string-similarity.min.js
 // @grant        none
@@ -1983,8 +1983,14 @@
             //console.log(strSetlist);
             var compSetlist = binaryToHex(strSetlist);
             //console.log(compSetlist.result);
-            console.log(compSetlist.result);
-            codeArea.value = "#[group:" + document.querySelector("#main_content input[name='gruppe_name']").value + "]的宝库\n" + wrapStr(compSetlist.result, 60);
+            var groupName = document.querySelector("#main_content input[name='gruppe_name']").value;
+            var heroName = document.querySelector("#main_content input[name='heldenname']").value;
+            var cellarName = document.querySelector("#main_content input[name='view']").value;
+            if (cellarName == "groupcellar"){cellarName = "宝库"};
+            if (cellarName == "groupcellar_2") {cellarName = "团队仓库"};
+            if (cellarName == "") {cellarName = "仓库"};
+            if (cellarName == "cellar") {cellarName = "贮藏室"};
+            codeArea.value = "#[group:" + groupName + "] - [hero:" + heroName + "]的" + cellarName + "\n" + wrapStr(compSetlist.result, 60);
         });
     }
 
@@ -2015,8 +2021,8 @@
         var hexSetCode = document.getElementById("codeArea").value;
         hexSetCode = tidySharecode(hexSetCode);
         var binSetCode = hexToBinary(hexSetCode);
-        //console.log(binSetCode.result);
-        document.getElementById("codeArea").value = binToBB(binSetCode.result);
+        //console.log(Number(binSetCode.result));
+        if(Number(binSetCode.result)){document.getElementById("codeArea").value = binToBB(binSetCode.result);}else{codeArea.value = "这个套装码是空的，建议乞讨！"};
     }
 
     // calc button function ////////////////////////////////////////////////////
@@ -2057,82 +2063,81 @@
     // front-end manipulation //////////////////////////////////////////////////
 
     if(/\/wod\/spiel\/hero\/items.php.*/.test(document.URL)){
-        if (document.querySelector("#main_content input[name='view']").value == "groupcellar"){
-            // add output button //////////////////////////////////////
-            var outputDiv = document.querySelector("form div[class='layout_right']");
-            var bbcodeA = outputDiv.firstChild.nextSibling;
-            var outputTreasureSet = document.createElement("a");
-            outputTreasureSet.setAttribute("onclick", bbcodeA.getAttribute("onclick").replace("&IS_POPUP=1","&IS_POPUP=1&treasurecode=1"));
-            outputTreasureSet.setAttribute("href",bbcodeA.getAttribute("href").replace("&IS_POPUP=1","&IS_POPUP=1&treasurecode=1"));
-            outputTreasureSet.setAttribute("target","_blank");
-            outputTreasureSet.innerHTML = " 套装列表";
-            outputDiv.appendChild(outputTreasureSet);
+        // if (document.querySelector("#main_content input[name='view']").value == "groupcellar"){
+        // add output button //////////////////////////////////////
+        var bbcodeA = document.querySelector("form div[class='layout_right'] a");
+        var outputTreasureSet = document.createElement("a");
+        outputTreasureSet.setAttribute("onclick", bbcodeA.getAttribute("onclick").replace("&IS_POPUP=1","&IS_POPUP=1&treasurecode=1"));
+        outputTreasureSet.setAttribute("href",bbcodeA.getAttribute("href").replace("&IS_POPUP=1","&IS_POPUP=1&treasurecode=1"));
+        outputTreasureSet.setAttribute("target","_blank");
+        outputTreasureSet.innerHTML = " 套装列表";
+        bbcodeA.parentElement.appendChild(outputTreasureSet);
 
-            // add list holding div //////////////////////////////////
-            var mainContent = document.getElementById("main_content");
-            var listDiv = document.createElement("div");
-            listDiv.style="display: none;"
-            listDiv.id="listDiv";
-            mainContent.firstChild.nextSibling.appendChild(listDiv);
+        // add list holding div //////////////////////////////////
+        var mainContent = document.getElementById("main_content");
+        var listDiv = document.createElement("div");
+        listDiv.style="display: none;"
+        listDiv.id="listDiv";
+        mainContent.firstChild.nextSibling.appendChild(listDiv);
 
-            // add code output textarea /////////////////////////////
-            var treasureLoveDiv = document.createElement("div");
-            treasureLoveDiv.id = "treasureLove";
-            mainContent.firstChild.nextSibling.appendChild(treasureLoveDiv);
+        // add code output textarea /////////////////////////////
+        var treasureLoveDiv = document.createElement("div");
+        treasureLoveDiv.id = "treasureLove";
+        mainContent.firstChild.nextSibling.appendChild(treasureLoveDiv);
 
-            var codeArea = document.createElement("textarea");
-            codeArea.id = "codeArea";
-            codeArea.value = "宝库1代码...\n\n1. 点击“获取代码”，即可在左侧输入框获得当前宝库代码\n\n2. 在左侧输入框输入别人分享的代码，点击“解析代码”，即可获得对方宝库套装列表\n\n3. 在右侧输入框输入对方分享的宝库码（保持左侧为原有提示语，或者为空），点击“计算好感度”，可以计算对方和你当前宝库的好感\n\n4. 在左右两侧分别输入双方宝库码，即可计算这两个宝库的好感";
-            codeArea.style = "width: 45%; height: 200px; padding:10px; margin: 5px; line-height: 1em; font-family: 'Times New Roman', 'Liberation Serif', Roboto, SimHei, 'Wenquanyi Micro Hei', monospace;";
-            var codeArea_2 = document.createElement("textarea");
-            codeArea_2.id = "codeArea_2";
-            codeArea_2.value = "宝库2代码...";
-            codeArea_2.style = "width: 45%; height: 200px; padding:10px; margin: 5px; line-height: 1em; font-family: 'Times New Roman', 'Liberation Serif', Roboto, SimHei, 'Wenquanyi Micro Hei', monospace;";
-            var codeAreaBr = document.createElement("br");
-            var codeAreaHr = document.createElement("hr");
+        var codeArea = document.createElement("textarea");
+        codeArea.id = "codeArea";
+        codeArea.value = "宝库1代码...\n\n1. 点击“获取代码”，即可在左侧输入框获得当前宝库代码\n\n2. 在左侧输入框输入别人分享的代码，点击“解析代码”，即可获得对方宝库套装列表\n\n3. 在右侧输入框输入对方分享的宝库码（保持左侧为原有提示语，或者为空），点击“计算好感度”，可以计算对方和你当前宝库的好感\n\n4. 在左右两侧分别输入双方宝库码，即可计算这两个宝库的好感";
+        codeArea.style = "width: 45%; height: 200px; padding:10px; margin: 5px; line-height: 1em; font-family: 'Times New Roman', 'Liberation Serif', Roboto, SimHei, 'Wenquanyi Micro Hei', monospace;";
+        var codeArea_2 = document.createElement("textarea");
+        codeArea_2.id = "codeArea_2";
+        codeArea_2.value = "宝库2代码...";
+        codeArea_2.style = "width: 45%; height: 200px; padding:10px; margin: 5px; line-height: 1em; font-family: 'Times New Roman', 'Liberation Serif', Roboto, SimHei, 'Wenquanyi Micro Hei', monospace;";
+        var codeAreaBr = document.createElement("br");
+        var codeAreaHr = document.createElement("hr");
 
-            var getListButton = document.createElement("input");
-            getListButton.type = ("submit");
-            getListButton.style = ("margin: 0 0 0 5px;");
-            getListButton.setAttribute("class", "button clickable");
-            getListButton.setAttribute("onclick", "loadTreasure();");
-            getListButton.value = "获取代码";
-            var decodeListButton = document.createElement("input");
-            decodeListButton.type = ("submit");
-            decodeListButton.style = ("margin: 0 0 0 5px;");
-            decodeListButton.setAttribute("class", "button clickable");
-            decodeListButton.setAttribute("onclick", "decodeSetCode();");
-            decodeListButton.value = "解析代码";
-            var calcButton = document.createElement("input");
-            calcButton.type = ("submit");
-            calcButton.style = ("margin: 0 0 0 5px;");
-            calcButton.setAttribute("class", "button clickable");
-            calcButton.setAttribute("onclick", "calcLove();");
-            calcButton.value = "计算好感度";
-            var rmButton = document.createElement("input");
-            rmButton.type = ("submit");
-            rmButton.style = ("margin: 0 0 0 5px;");
-            rmButton.setAttribute("class", "button clickable");
-            rmButton.setAttribute("onclick", "clearCodeArea();");
-            rmButton.value = "清空";
-            treasureLoveDiv.appendChild(codeAreaHr);
-            treasureLoveDiv.appendChild(codeArea);
-            treasureLoveDiv.appendChild(codeArea_2);
-            treasureLoveDiv.appendChild(codeAreaBr);
-            treasureLoveDiv.appendChild(getListButton);
-            treasureLoveDiv.appendChild(decodeListButton);
-            treasureLoveDiv.appendChild(calcButton);
-            treasureLoveDiv.appendChild(rmButton);
-        }
+        var getListButton = document.createElement("input");
+        getListButton.type = ("submit");
+        getListButton.style = ("margin: 0 0 0 5px;");
+        getListButton.setAttribute("class", "button clickable");
+        getListButton.setAttribute("onclick", "loadTreasure();");
+        getListButton.value = "获取代码";
+        var decodeListButton = document.createElement("input");
+        decodeListButton.type = ("submit");
+        decodeListButton.style = ("margin: 0 0 0 5px;");
+        decodeListButton.setAttribute("class", "button clickable");
+        decodeListButton.setAttribute("onclick", "decodeSetCode();");
+        decodeListButton.value = "解析代码";
+        var calcButton = document.createElement("input");
+        calcButton.type = ("submit");
+        calcButton.style = ("margin: 0 0 0 5px;");
+        calcButton.setAttribute("class", "button clickable");
+        calcButton.setAttribute("onclick", "calcLove();");
+        calcButton.value = "计算好感度";
+        var rmButton = document.createElement("input");
+        rmButton.type = ("submit");
+        rmButton.style = ("margin: 0 0 0 5px;");
+        rmButton.setAttribute("class", "button clickable");
+        rmButton.setAttribute("onclick", "clearCodeArea();");
+        rmButton.value = "清空";
+        treasureLoveDiv.appendChild(codeAreaHr);
+        treasureLoveDiv.appendChild(codeArea);
+        treasureLoveDiv.appendChild(codeArea_2);
+        treasureLoveDiv.appendChild(codeAreaBr);
+        treasureLoveDiv.appendChild(getListButton);
+        treasureLoveDiv.appendChild(decodeListButton);
+        treasureLoveDiv.appendChild(calcButton);
+        treasureLoveDiv.appendChild(rmButton);
+        //    }
     }
 
     // output cellar /////////////////////////////////////////////////////
 
-    if (/\/wod\/spiel\/hero\/itemlinklist.php?.*&treasurecode=1/.test(document.URL)) {
+   if (/\/wod\/spiel\/hero\/itemlinklist.php?.*&treasurecode=1/.test(document.URL)) {
         var itemlist = document.getElementsByTagName("pre")[0].innerText;
-        //console.log(itemlist);
+        console.log(itemlist);
         treasureItems = getList(itemlist);
-        //console.log(treasureItems);
+        console.log(treasureItems);
         document.getElementsByTagName("pre")[0].innerHTML = getSetlistString(treasureItems);
     }
 })();
